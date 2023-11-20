@@ -36,6 +36,8 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 
-app.listen(8800, () => {
-  console.log("backend server is running on port 8800");
+const PORT = process.env.PORT || 8800;
+
+app.listen(PORT, () => {
+  console.log("backend server is running on port " + PORT);
 });
