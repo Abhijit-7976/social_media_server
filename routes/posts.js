@@ -1,4 +1,5 @@
 const Post = require("../models/Post");
+const Comment = require("../models/Comment");
 const User = require("../models/User");
 const router = require("express").Router();
 
@@ -32,8 +33,12 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+    console.log(post.comments);
     if (req.body.userId === post.userId) {
       await post.deleteOne();
+      await Comment.deleteMany({
+        _id: { $in: post.comments },
+      });
       res.status(200).json("The post is deleted");
     } else {
       res.status(403).json("You can only delete your posts");
@@ -47,7 +52,6 @@ router.delete("/:id", async (req, res) => {
 router.patch("/:id/like", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-
     if (post.userId !== req.body.userId) {
       if (!post.likes.includes(req.body.userId)) {
         await post.updateOne({ $push: { likes: req.body.userId } });

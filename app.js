@@ -32,10 +32,6 @@ app.use("/api/posts", postsRoute);
 app.use("/api/comments", commentsRoute);
 app.use("/api/files", filesRoute);
 
-app.get("/", (req, res) => {
-  res.send("hello world");
-});
-
 const PORT = process.env.PORT || 8800;
 
 app.listen(PORT, () => {

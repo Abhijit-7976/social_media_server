@@ -56,6 +56,20 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET ALL USER
+router.get("/all", async (req, res) => {
+  try {
+    const users = await User.find();
+    newUsers = users.map(user => {
+      const { password, createdAt, updatedAt, ...other } = user._doc;
+      return other;
+    });
+    res.status(200).json(newUsers);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 // FOLLOW A USER
 router.patch("/:id/follow", async (req, res) => {
   if (req.body.userId !== req.params.id) {

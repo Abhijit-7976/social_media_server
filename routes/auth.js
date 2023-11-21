@@ -19,7 +19,8 @@ router.post("/register", verifyToken, async (req, res) => {
     //save user and return response
     const result = await newUser.save();
     const { password, createdAt, updatedAt, ...other } = result._doc;
-    const token = jwt.sign(other, process.env.SECERET_KEY, {
+    console.log(other._id);
+    const token = jwt.sign({ userId: other._id }, process.env.SECERET_KEY, {
       expiresIn: process.env.JWT_EXPIRE_TIME,
     });
 
@@ -41,11 +42,12 @@ router.post("/login", verifyToken, async (req, res) => {
     const validPassword = await argon2.verify(user.password, req.body.password);
     if (!validPassword) return res.status(404).json("wrong password");
 
+    // console.log(user._doc._id);
+    const userId = user._doc._id;
     const { password, createdAt, updatedAt, ...other } = user._doc;
-    const token = jwt.sign(other, process.env.SECERET_KEY, {
+    const token = jwt.sign({ userId }, process.env.SECERET_KEY, {
       expiresIn: process.env.JWT_EXPIRE_TIME,
     });
-
     res
       .cookie("accessToken", token, { httpOnly: true })
       .status(200)
@@ -61,16 +63,16 @@ router.post("/verify", verifyToken, (req, res) => {
 });
 
 // VERIFY MIDDLEWARE
-function verifyToken(req, res, next) {
+async function verifyToken(req, res, next) {
   const accessToken = req.cookies.accessToken;
+  // console.log(accessToken);
 
   if (!accessToken) return next();
 
   try {
-    const { iat, exp, ...other } = jwt.verify(
-      accessToken,
-      process.env.SECERET_KEY
-    );
+    const { userId } = jwt.verify(accessToken, process.env.SECERET_KEY);
+    const user = await User.findById(userId);
+    const { password, createdAt, updatedAt, ...other } = user._doc;
     res.status(200).json(other);
   } catch (err) {
     return next();
